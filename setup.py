@@ -5,9 +5,9 @@ from setuptools import setup
 
 setup(
     name='git_stamp',
-    version='0.0.1',
+    version='0.1.0',
     scripts=[ 'bin/timestamp' ],
-    install_requires=[ 'dulwich' ],
+    install_requires=[ 'dulwich', 'termcolor' ],
     provides=[ 'git_stamp' ],
     author='Justin Menga',
     author_email='justin.menga@gmail.com',
