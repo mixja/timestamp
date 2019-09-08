@@ -61,7 +61,7 @@ def main():
     for f in to_str(filenames):
       timestamp = timestamps.get(args.source or f)    
       if timestamp:
-        cprint(f'{f} - {timestamp}','green')
+        cprint(f'{f} - setting timestamp {timestamp}','green')
         os.utime(f,(timestamp,timestamp))
 
 if __name__ == '__main__':
