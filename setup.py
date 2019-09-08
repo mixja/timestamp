@@ -5,13 +5,13 @@ from setuptools import setup
 
 setup(
     name='git_stamp',
-    version='0.1.0',
+    version='0.1.1',
     scripts=[ 'bin/timestamp' ],
     install_requires=[ 'dulwich', 'termcolor' ],
     provides=[ 'git_stamp' ],
     author='Justin Menga',
     author_email='justin.menga@gmail.com',
-    url='https://github.com/mixja/git-stamp',
+    url='https://github.com/mixja/timestamp',
     description='Command-line utility for resetting file system timestamps based upon Git timestamps',
     keywords='git timestamp',
     license='ISC',
