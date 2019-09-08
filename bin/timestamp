@@ -1,0 +1,68 @@
+#!/usr/bin/env python3
+import os
+import datetime
+import argparse
+import itertools
+from termcolor import cprint
+from dulwich import porcelain
+from dulwich.errors import NotGitRepository
+
+def parse_args():
+  parser = argparse.ArgumentParser(description='Fix timestamps to ensure repeatable builds')
+  parser.add_argument('-s','--source',help='A single source file to use for the timestamp.  If not specified each files last commit timestamp is used.')
+  parser.add_argument('-p','--path',default='.',help='Target path that should have timestamps applied. Defaults to directory root.')
+  parser.add_argument
+  return parser.parse_args()
+
+def get_timestamps(repo, paths):
+  walker = repo.get_walker(paths=paths)
+  objects = [
+    [{'path':c.new.path,'timestamp':w.commit.commit_time} for c in change] 
+    if type(change) is list else [{'path':change.new.path,'timestamp':w.commit.commit_time}] 
+    for w in walker for change in w.changes()
+  ]
+  flattened = list(itertools.chain(*objects))
+  filtered = sorted((
+    f for f in flattened 
+    if f['path'] in paths
+  ),key=lambda f: f['path'])
+  return {
+    o['path'].decode():o['timestamp']
+    for _,obj in itertools.groupby(filtered, key=lambda f: f['path'])
+    for o in [next(obj)]
+  }
+
+def get_filenames(path):
+  return [
+    f if root == '.' else os.path.join(root,f)
+    for root, _, filenames in os.walk(path)
+    for f in filenames
+  ]
+
+def to_str(binary_strings):
+  return [
+    b.decode() if type(b) is bytes else b
+    for b in binary_strings
+  ]
+
+def main():
+  args = parse_args()
+  try:
+    repo = porcelain.Repo('.')
+  except NotGitRepository:
+    cprint("ERROR: you must run this command at the root of a Git repository.","red")
+  else:
+    filenames = porcelain.ls_files(repo) if args.path == '.' else get_filenames(args.path)
+    if args.source:
+      paths = [bytes(args.source,'utf-8')]
+    else:
+      paths = filenames
+    timestamps = get_timestamps(repo, paths)
+    for f in to_str(filenames):
+      timestamp = timestamps.get(args.source or f)    
+      if timestamp:
+        cprint(f'{f} - {timestamp}','green')
+        os.utime(f,(timestamp,timestamp))
+
+if __name__ == '__main__':
+    main()
